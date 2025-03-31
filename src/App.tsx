@@ -15,14 +15,19 @@ declare global {
   }
 }
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 
 // Define our channel types
+interface PlaylistItem {
+  id: string;
+  duration: number; // Duration in seconds
+}
+
 interface Channel {
   id: number;
   name: string;
-  playlist: string[];
+  playlist: PlaylistItem[];
   color: string;
 }
 
@@ -43,9 +48,9 @@ function App() {
       id: 0,
       name: "90s Cartoons",
       playlist: [
-        "d8a54KCGfLQ", // Better 90s cartoons videos
-        "N3JVQ4Cv1SE",
-        "TKtCVblxDRc"
+        { id: "KF33eZXLvmU", duration: 1800 }, // 30 minutes
+        // { id: "N3JVQ4Cv1SE", duration: 1800 },
+        // { id: "TKtCVblxDRc", duration: 1800 }
       ],
       color: "#ff5252"
     },
@@ -53,9 +58,9 @@ function App() {
       id: 1,
       name: "90s Commercials",
       playlist: [
-        "gZo1cFVoLQ8", // More reliable commercial compilations
-        "EgkCxFt8XJ0",
-        "DY6uHo31zeo"
+        { id: "KF33eZXLvmU", duration: 1800 },
+        // { id: "EgkCxFt8XJ0", duration: 1800 },
+        // { id: "DY6uHo31zeo", duration: 1800 }
       ],
       color: "#2196f3"
     },
@@ -63,36 +68,47 @@ function App() {
       id: 2,
       name: "90s TV Shows",
       playlist: [
-        "U2HCuxV1Zdg", // More common TV show intros
-        "rAyVdV4Kkx4", 
-        "WfKUWvfNS5k"
+        { id: "KF33eZXLvmU", duration: 1800 },
+        // { id: "rAyVdV4Kkx4", duration: 1800 },
+        // { id: "WfKUWvfNS5k", duration: 1800 }
       ],
       color: "#4caf50"
     }
   ];
 
-  // Function to determine which video to play based on current time
-  useEffect(() => {
-    const determineVideoFromTime = () => {
-      const now = new Date();
-      const secondsSinceMidnight = 
-        now.getHours() * 3600 + 
-        now.getMinutes() * 60 + 
-        now.getSeconds();
-      
-      const currentPlaylist = channels[currentChannel].playlist;
-      const videoIndex = Math.floor(secondsSinceMidnight / 300) % currentPlaylist.length; // Change video every 5 minutes
-      
-      setVideoId(currentPlaylist[videoIndex]);
-      setVideoError(false); // Reset error state when changing videos
-    };
-
-    determineVideoFromTime();
-    // Update every minute to check if we need to change videos
-    const intervalId = setInterval(determineVideoFromTime, 60000);
+  // Add this before the useEffect that calls it
+  const determineVideoFromTime = useCallback(() => {
+    const now = new Date();
+    const utcSecondsSinceMidnight = 
+      now.getUTCHours() * 3600 + 
+      now.getUTCMinutes() * 60 + 
+      now.getUTCSeconds();
     
+    const currentChannelData = channels[currentChannel];
+    const totalPlaylistDuration = currentChannelData.playlist.reduce((sum, video) => sum + video.duration, 0);
+    const currentPlaylistPosition = utcSecondsSinceMidnight % totalPlaylistDuration;
+    
+    let accumulatedTime = 0;
+    let currentVideoIndex = 0;
+    
+    for (let i = 0; i < currentChannelData.playlist.length; i++) {
+      accumulatedTime += currentChannelData.playlist[i].duration;
+      if (currentPlaylistPosition < accumulatedTime) {
+        currentVideoIndex = i;
+        break;
+      }
+    }
+    
+    setVideoId(currentChannelData.playlist[currentVideoIndex].id);
+    setVideoError(false);
+  }, [currentChannel, channels]); // Add dependencies
+
+  // Then update the useEffect to use the memoized version
+  useEffect(() => {
+    const intervalId = setInterval(determineVideoFromTime, 60000);
+    determineVideoFromTime();
     return () => clearInterval(intervalId);
-  }, [currentChannel, channels]);
+  }, [determineVideoFromTime]); // Now depends on the memoized callback
 
   // Load YouTube API and initialize player
   useEffect(() => {
@@ -176,11 +192,8 @@ function App() {
             onError: handleVideoError,
             onStateChange: (event: any) => {
               if (event.data === window.YT.PlayerState.ENDED) {
-                // Go to next video in playlist when current one ends
-                const currentPlaylist = channels[currentChannel].playlist;
-                const currentIndex = currentPlaylist.indexOf(videoId);
-                const nextIndex = (currentIndex + 1) % currentPlaylist.length;
-                setVideoId(currentPlaylist[nextIndex]);
+                // Let the time-based system handle progression instead of immediate next video
+                determineVideoFromTime();
               }
             }
           }
@@ -259,14 +272,14 @@ function App() {
     
     // Add fallback to static after 3 failed attempts
     const currentPlaylist = channels[currentChannel].playlist;
-    const currentIndex = currentPlaylist.indexOf(videoId);
+    const currentIndex = currentPlaylist.findIndex(item => item.id === videoId);
     const nextIndex = (currentIndex + 1) % currentPlaylist.length;
     
-    if (currentPlaylist[nextIndex] === videoId) {
+    if (currentPlaylist[nextIndex].id === videoId) {
       // If all videos failed, switch channel
       changeChannel('next');
     } else {
-      setVideoId(currentPlaylist[nextIndex]);
+      setVideoId(currentPlaylist[nextIndex].id);
     }
   };
 
