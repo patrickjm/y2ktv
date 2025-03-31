@@ -345,3 +345,31 @@ body {
     font-size: 16px;
   }
 }
+
+/* Add to existing CSS */
+.youtube-container {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+#youtube-player {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1.1);
+  width: 140% !important;
+  height: 140% !important;
+  pointer-events: none;
+}
+
+#youtube-player iframe {
+  filter: grayscale(100%) contrast(120%);
+}
+
+/* Hide YouTube elements using CSS hack */
+.html5-video-player:not(.ytp-fullscreen) .ytp-chrome-top,
+.ytp-show-cards-title {
+  display: none !important;
+}

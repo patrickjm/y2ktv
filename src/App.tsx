@@ -43,7 +43,7 @@ function App() {
       id: 0,
       name: "90s Cartoons",
       playlist: [
-        "Q5wGDHJ-KYo", // Better 90s cartoons videos
+        "d8a54KCGfLQ", // Better 90s cartoons videos
         "N3JVQ4Cv1SE",
         "TKtCVblxDRc"
       ],
@@ -140,14 +140,16 @@ function App() {
             showinfo: 0,
             modestbranding: 1,
             fs: 0,
-            cc_load_policy: 1,
-            cc_lang_pref: 'en',
+            cc_load_policy: 0,
             mute: 1,
             playsinline: 1,
             disablekb: 1,
             enablejsapi: 1,
             iv_load_policy: 3,
-            rel: 0
+            rel: 0,
+            autohide: 1,
+            color: 'white',
+            widget_referrer: window.location.href
           },
           events: {
             onReady: (event: any) => {
@@ -156,13 +158,20 @@ function App() {
               if (!isMuted) {
                 event.target.unMute();
               }
-              event.target.playVideo();
               
-              // Set referrerpolicy on the iframe
+              // Hide YouTube logo and title
               const iframe = document.querySelector('#youtube-player') as HTMLIFrameElement;
               if (iframe) {
+                iframe.style.opacity = '0';
                 iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+                setTimeout(() => {
+                  iframe.style.opacity = '1';
+                  iframe.contentWindow?.postMessage('{"event":"command","func":"setOption","args":["showinfo","0"]}', '*');
+                }, 1000);
               }
+              
+              // Start playback with slight delay
+              setTimeout(() => event.target.playVideo(), 500);
             },
             onError: handleVideoError,
             onStateChange: (event: any) => {
@@ -246,13 +255,19 @@ function App() {
   // Try the next video if the current one fails
   const handleVideoError = () => {
     setVideoError(true);
-    console.log('Video failed to load, likely blocked by an ad blocker');
+    console.log('Video failed to load');
     
-    // Try next video in the playlist
+    // Add fallback to static after 3 failed attempts
     const currentPlaylist = channels[currentChannel].playlist;
     const currentIndex = currentPlaylist.indexOf(videoId);
     const nextIndex = (currentIndex + 1) % currentPlaylist.length;
-    setVideoId(currentPlaylist[nextIndex]);
+    
+    if (currentPlaylist[nextIndex] === videoId) {
+      // If all videos failed, switch channel
+      changeChannel('next');
+    } else {
+      setVideoId(currentPlaylist[nextIndex]);
+    }
   };
 
   // Handle volume change
