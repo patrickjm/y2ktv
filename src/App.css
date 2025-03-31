@@ -31,8 +31,8 @@ body {
 .tv-set {
   position: relative;
   width: 90vmin;
-  max-width: 800px;
-  max-height: 90vh;
+  aspect-ratio: 5/0.8;
+  max-width: min(90vh, 90vw);
   background-color: var(--tv-color);
   border-radius: var(--tv-border-radius);
   padding: 20px;
@@ -48,10 +48,10 @@ body {
   border-radius: 5% / 3.5%;
   overflow: hidden;
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
-  aspect-ratio: 4/3;
-  padding-top: 75%;
   width: 100%;
-  height: var(--tv-height);
+  height: calc(100% - 90px);
+  aspect-ratio: 1/1;
+  padding-top: 100%;
   background-color: black;
   border-radius: calc(var(--tv-border-radius) - 10px);
   overflow: hidden;
@@ -233,14 +233,20 @@ body {
 }
 
 .tv-base {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 90px;
   background-color: var(--tv-color);
-  width: 100%;
-  height: 80px;
-  margin-top: 20px;
   border-radius: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+#vol-label {
+  bottom: 5px
 }
 
 .tv-channel-buttons {
@@ -413,9 +419,10 @@ body {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(1.15) translate(0, -2rem);
   width: 100%;
   height: 100%;
+  aspect-ratio: 1/1;
 }
 
 #youtube-player {
@@ -461,4 +468,17 @@ body {
   pointer-events: none;
   transform: translateX(1px);
   filter: blur(0.5px);
+}
+
+/* Add new channel number style */
+.channel-number {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-size: 2rem;
+  text-shadow: 0 0 5px #00ff00;
+  z-index: 2;
+  opacity: 0.8;
 }

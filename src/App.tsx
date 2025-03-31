@@ -35,7 +35,6 @@ function App() {
   const [currentChannel, setCurrentChannel] = useState<number>(0);
   const [videoId, setVideoId] = useState<string>('');
   const [isChangingChannel, setIsChangingChannel] = useState<boolean>(false);
-  const [showChannelInfo, setShowChannelInfo] = useState<boolean>(false);
   const [videoError, setVideoError] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [volume, setVolume] = useState<number>(100);
@@ -248,20 +247,16 @@ function App() {
     }
     
     setIsChangingChannel(true);
-    setShowChannelInfo(true);
     setVideoError(false);
     
     // Simulate TV channel changing effect
     setTimeout(() => {
       setCurrentChannel(nextChannel);
       
-      // After changing the channel, hide the changing effect
+      // After changing the channel, hide the changing effect after 1 second
       setTimeout(() => {
         setIsChangingChannel(false);
-        
-        // Hide channel info after 3 seconds
-        setTimeout(() => setShowChannelInfo(false), 3000);
-      }, 800);
+      }, 1000); // Reduced from 800 to 1000 for full second of static
     }, 500);
   };
 
@@ -298,6 +293,11 @@ function App() {
     <div className="app-container">
       <div className="tv-set">
         <div className={`tv-screen ${isChangingChannel ? 'changing-channel' : ''}`}>
+          {/* Add permanent channel number display */}
+          <div className="channel-number">
+            {currentChannel + 1}
+          </div>
+          
           {!isChangingChannel && !videoError && (
             <>
               <div id="youtube-container" className="youtube-container"></div>
@@ -305,14 +305,6 @@ function App() {
             </>
           )}
           {(isChangingChannel || videoError) && <div className="tv-static"></div>}
-          {showChannelInfo && (
-            <div className="channel-info">
-              <div className="channel-number">{currentChannel + 1}</div>
-              <div className="channel-name" style={{ color: channels[currentChannel].color }}>
-                {channels[currentChannel].name}
-              </div>
-            </div>
-          )}
         </div>
         <div className="tv-glow"></div>
         <div className="tv-base">
@@ -346,7 +338,7 @@ function App() {
                   onChange={handleVolumeChange}
                   className="volume-slider"
                 />
-                <div className="knob-label">VOL</div>
+                <div className="knob-label" id="vol-label">VOL</div>
               </div>
               <button 
                 className={`mute-button ${isMuted ? 'muted' : ''}`}
