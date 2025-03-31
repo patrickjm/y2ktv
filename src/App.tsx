@@ -286,7 +286,10 @@ function App() {
       <div className="tv-set">
         <div className={`tv-screen ${isChangingChannel ? 'changing-channel' : ''}`}>
           {!isChangingChannel && !videoError && (
-            <div id="youtube-container" className="youtube-container"></div>
+            <>
+              <div id="youtube-container" className="youtube-container"></div>
+              <div className="scanline" />
+            </>
           )}
           {(isChangingChannel || videoError) && <div className="tv-static"></div>}
           {showChannelInfo && (
