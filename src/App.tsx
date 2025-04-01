@@ -17,6 +17,7 @@ declare global {
 
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import './App.css';
+import { SHOWS } from './shows';
 
 // Define our channel types
 interface PlaylistItem {
@@ -41,39 +42,21 @@ function App() {
   const playerRef = useRef<any>(null);
   const playerReadyRef = useRef<boolean>(false);
   
-  // Our TV channels with 90s content
-  const channels: Channel[] = [
-    {
-      id: 0,
-      name: "90s Cartoons",
-      playlist: [
-        { id: "9NSVU4Gv_wA", duration: 1800 }, // 30 minutes
-        // { id: "N3JVQ4Cv1SE", duration: 1800 },
-        // { id: "TKtCVblxDRc", duration: 1800 }
-      ],
-      color: "#ff5252"
-    },
-    {
-      id: 1,
-      name: "90s Commercials",
-      playlist: [
-        { id: "KF33eZXLvmU", duration: 1800 },
-        // { id: "EgkCxFt8XJ0", duration: 1800 },
-        // { id: "DY6uHo31zeo", duration: 1800 }
-      ],
-      color: "#2196f3"
-    },
-    {
-      id: 2,
-      name: "90s TV Shows",
-      playlist: [
-        { id: "KF33eZXLvmU", duration: 1800 },
-        // { id: "rAyVdV4Kkx4", duration: 1800 },
-        // { id: "WfKUWvfNS5k", duration: 1800 }
-      ],
-      color: "#4caf50"
-    }
-  ];
+  // Get unique genres from shows
+  const genres = [...new Set(SHOWS.map(show => show.g))];
+  
+  // Create channels based on genres
+  const channels: Channel[] = genres.map((genre, index) => ({
+    id: index,
+    name: genre,
+    playlist: SHOWS
+      .filter(show => show.g === genre)
+      .map(show => ({
+        id: show.yt,
+        duration: show.t
+      })),
+    color: `hsl(${(index * 360) / genres.length}, 70%, 50%)` // Generate different colors for each channel
+  }));
 
   // Add this before the useEffect that calls it
   const determineVideoFromTime = useCallback(() => {
