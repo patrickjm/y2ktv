@@ -47,7 +47,7 @@ function App() {
       id: 0,
       name: "90s Cartoons",
       playlist: [
-        { id: "KF33eZXLvmU", duration: 1800 }, // 30 minutes
+        { id: "9NSVU4Gv_wA", duration: 1800 }, // 30 minutes
         // { id: "N3JVQ4Cv1SE", duration: 1800 },
         // { id: "TKtCVblxDRc", duration: 1800 }
       ],
@@ -293,9 +293,8 @@ function App() {
     <div className="app-container">
       <div className="tv-set">
         <div className={`tv-screen ${isChangingChannel ? 'changing-channel' : ''}`}>
-          {/* Add permanent channel number display */}
           <div className="channel-number">
-            {currentChannel + 1}
+            CH{currentChannel + 1}
           </div>
           
           {!isChangingChannel && !videoError && (
