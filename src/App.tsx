@@ -164,7 +164,8 @@ function App() {
             rel: 0,
             autohide: 1,
             color: 'white',
-            widget_referrer: window.location.href
+            widget_referrer: window.location.href,
+            origin: window.location.hostname
           },
           events: {
             onReady: (event: any) => {
@@ -174,16 +175,20 @@ function App() {
                 event.target.unMute();
               }
               
-              // Hide YouTube logo and title
-              const iframe = document.querySelector('#youtube-player') as HTMLIFrameElement;
+              // Set iframe attributes directly
+              const iframe = document.querySelector('#youtube-player iframe');
               if (iframe) {
-                iframe.style.opacity = '0';
-                iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
-                setTimeout(() => {
-                  iframe.style.opacity = '1';
-                  iframe.contentWindow?.postMessage('{"event":"command","func":"setOption","args":["showinfo","0"]}', '*');
-                }, 1000);
+                // Set width and height attributes directly (similar to ytch example)
+                iframe.setAttribute('width', '100%');
+                iframe.setAttribute('height', '3000');
+                
+                // Set additional attributes that might help
+                iframe.setAttribute('frameborder', '0');
+                iframe.setAttribute('allowfullscreen', 'false');
               }
+              
+              // Center the tall iframe to hide YouTube branding/title
+              adjustPlayerVerticalPosition();
               
               // Start playback with slight delay
               setTimeout(() => event.target.playVideo(), 500);
@@ -193,6 +198,9 @@ function App() {
               if (event.data === window.YT.PlayerState.ENDED) {
                 // Let the time-based system handle progression instead of immediate next video
                 determineVideoFromTime();
+              } else if (event.data === window.YT.PlayerState.PLAYING) {
+                // When video starts playing, adjust position
+                adjustPlayerVerticalPosition();
               }
             }
           }
@@ -288,6 +296,41 @@ function App() {
   const toggleMute = () => {
     setIsMuted(!isMuted);
   };
+
+  // Function to adjust the player's vertical position to center content and hide controls/branding
+  const adjustPlayerVerticalPosition = useCallback(() => {
+    try {
+      const playerElement = document.getElementById('youtube-player');
+      const container = document.getElementById('youtube-container');
+      if (!playerElement || !container) return;
+
+      // Set explicit dimensions
+      playerElement.style.height = '3000px';
+      const iframe = playerElement.querySelector('iframe');
+      if (iframe) {
+        iframe.setAttribute('height', '3000');
+        iframe.style.height = '3000px';
+      }
+
+      // Center the content
+      const containerHeight = container.clientHeight;
+      playerElement.style.marginTop = `${(containerHeight - 3000) / 2}px`;
+      
+    } catch (e) {
+      console.error("Error adjusting player position:", e);
+    }
+  }, []);
+
+  // Add window resize listener to adjust player position when container size changes
+  useEffect(() => {
+    window.addEventListener('resize', adjustPlayerVerticalPosition);
+    // Initial adjustment
+    adjustPlayerVerticalPosition();
+    
+    return () => {
+      window.removeEventListener('resize', adjustPlayerVerticalPosition);
+    };
+  }, [adjustPlayerVerticalPosition]);
 
   return (
     <div className="app-container">
