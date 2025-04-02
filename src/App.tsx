@@ -19,6 +19,9 @@ import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import './App.css';
 import { SHOWS } from './shows';
 
+// Add at the top of the file (under other declarations)
+const SEED = 1714550400; // Fixed seed date (2024-05-01 00:00:00 UTC)
+
 // Define our channel types
 interface PlaylistItem {
   id: string;
@@ -41,6 +44,7 @@ function App() {
   const [volume, setVolume] = useState<number>(100);
   const playerRef = useRef<any>(null);
   const playerReadyRef = useRef<boolean>(false);
+  const [currentTime, setCurrentTime] = useState<number>(0);
   
   // Get unique genres from shows
   const genres = [...new Set(SHOWS.map(show => show.g))];
@@ -60,30 +64,34 @@ function App() {
 
   // Add this before the useEffect that calls it
   const determineVideoFromTime = useCallback(() => {
-    const now = new Date();
-    const utcSecondsSinceMidnight = 
-      now.getUTCHours() * 3600 + 
-      now.getUTCMinutes() * 60 + 
-      now.getUTCSeconds();
-    
+    const now = Date.now(); // Current UTC timestamp in milliseconds
+    const totalSeconds = Math.floor((now - SEED) / 1000);
+
     const currentChannelData = channels[currentChannel];
     const totalPlaylistDuration = currentChannelData.playlist.reduce((sum, video) => sum + video.duration, 0);
-    const currentPlaylistPosition = utcSecondsSinceMidnight % totalPlaylistDuration;
     
+    // Get current position in the endless cycle
+    const currentCyclePosition = totalSeconds % totalPlaylistDuration;
+    
+    // Find current video and its start time in the cycle
     let accumulatedTime = 0;
     let currentVideoIndex = 0;
+    let currentVideoStart = 0;
     
     for (let i = 0; i < currentChannelData.playlist.length; i++) {
-      accumulatedTime += currentChannelData.playlist[i].duration;
-      if (currentPlaylistPosition < accumulatedTime) {
+      const video = currentChannelData.playlist[i];
+      if (currentCyclePosition < accumulatedTime + video.duration) {
         currentVideoIndex = i;
+        currentVideoStart = currentCyclePosition - accumulatedTime;
         break;
       }
+      accumulatedTime += video.duration;
     }
-    
+
     setVideoId(currentChannelData.playlist[currentVideoIndex].id);
+    setCurrentTime(currentVideoStart); // You'll need to add this state
     setVideoError(false);
-  }, [currentChannel, channels]); // Add dependencies
+  }, [currentChannel, channels]);
 
   // Then update the useEffect to use the memoized version
   useEffect(() => {
@@ -133,6 +141,7 @@ function App() {
         playerRef.current = new window.YT.Player('youtube-player', {
           videoId: videoId,
           playerVars: {
+            start: currentTime,
             autoplay: 1,
             controls: 0,
             showinfo: 0,
