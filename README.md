@@ -1,4 +1,4 @@
-# 90TV - 90s Television Experience
+# y2ktv
 
 A nostalgic 90s TV simulator built with React, Bun, and Vite that plays YouTube videos of 90s TV shows and commercials in a retro TV interface.
 
@@ -32,25 +32,6 @@ bun run dev
 - The video will play automatically - there are no playback controls (just like a real TV!)
 - The content changes every 5 minutes based on the current time
 
-## Customizing Channels
-
-You can customize the channels by editing the `channels` array in the `App.tsx` file:
-
-```typescript
-const channels: Channel[] = [
-  {
-    id: 0,
-    name: "My Channel Name",
-    playlist: [
-      "YouTube_Video_ID_1",
-      "YouTube_Video_ID_2",
-      "YouTube_Video_ID_3"
-    ],
-    color: "#hex_color"
-  },
-  // Add more channels...
-];
-```
 
 ## Technical Notes
 
@@ -62,7 +43,3 @@ const channels: Channel[] = [
 ## Credits
 
 This project was inspired by similar nostalgic TV simulators like ytch.xyz.
-
-## License
-
-MIT
