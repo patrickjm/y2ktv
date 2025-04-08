@@ -52,3 +52,12 @@ ffmpeg -i input.mp4 -c:v libvpx-vp9 -crf 40 -b:v 250K -vf scale=640:360 -c:a lib
 
 ffmpeg -i output.webm -t 5 -c copy trimmed.webm
 ```
+
+Static audio:
+
+https://freesound.org/people/curtiswcole/sounds/717301/
+
+Then ran:
+```sh
+ffmpeg -i static-noise.wav -t 2 -b:a 64k -q:a 4 static-noise.mp3
+```

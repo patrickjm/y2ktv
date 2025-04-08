@@ -46,6 +46,8 @@ function App() {
   const playerReadyRef = useRef<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
+  const [isStaticVisible, setIsStaticVisible] = useState<boolean>(true); // Controls actual visibility
+  const staticVideoRef = useRef<HTMLVideoElement | null>(null); // Ref for the video element
   
   // Get unique genres from shows
   const genres = [...new Set(SHOWS.map(show => show.g))];
@@ -343,6 +345,27 @@ function App() {
     };
   }, [adjustPlayerVerticalPosition]);
 
+  // Effect to manage static visibility and fade
+  useEffect(() => {
+    if (isChangingChannel || videoError) {
+      setIsStaticVisible(true); // Show immediately
+    } else {
+      // Start fade out
+      const videoElement = staticVideoRef.current;
+      if (videoElement) {
+        videoElement.classList.add('static-fade-out');
+        
+        // Remove the video element after fade out completes
+        const handleTransitionEnd = () => {
+          setIsStaticVisible(false);
+          videoElement.classList.remove('static-fade-out');
+          videoElement.removeEventListener('transitionend', handleTransitionEnd);
+        };
+        videoElement.addEventListener('transitionend', handleTransitionEnd);
+      }
+    }
+  }, [isChangingChannel, videoError]);
+
   return (
     <div className="app-container">
       <div className="tv-set">
@@ -351,8 +374,9 @@ function App() {
             CH{currentChannel + 1}
           </div>
           
-          {(isChangingChannel || videoError) && (
+          {isStaticVisible && (
             <video 
+              ref={staticVideoRef}
               className="tv-static-video" 
               src="/static.webm" 
               autoPlay 
@@ -362,9 +386,9 @@ function App() {
           )}
           
           {/* YouTube container should always be present to hold the player */} 
-          <div id="youtube-container" className="youtube-container" style={{ visibility: isChangingChannel || videoError ? 'hidden' : 'visible' }}></div>
+          <div id="youtube-container" className="youtube-container" style={{ visibility: isStaticVisible ? 'hidden' : 'visible' }}></div>
           
-          {!isChangingChannel && !videoError && (
+          {!isStaticVisible && (
             <div className="scanline" />
           )}
           
