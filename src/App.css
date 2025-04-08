@@ -93,16 +93,16 @@ body {
   background: 
     repeating-linear-gradient(
       0deg,
-      rgba(0, 0, 0, 0.15) 0%,
-      rgba(0, 0, 0, 0.15) 1px,
+      rgba(0, 0, 0, 0.10) 0%,
+      rgba(0, 0, 0, 0.10) 1px,
       transparent 1px,
       transparent 4px
     ),
     repeating-linear-gradient(
       90deg,
-      rgba(0, 255, 0, 0.03) 0%,
-      rgba(255, 0, 0, 0.03) 1px,
-      rgba(0, 0, 255, 0.03) 2px,
+      rgba(0, 255, 0, 0.02) 0%,
+      rgba(255, 0, 0, 0.02) 1px,
+      rgba(0, 0, 255, 0.02) 2px,
       transparent 3px
     );
   pointer-events: none;
@@ -202,7 +202,7 @@ body {
 }
 
 /* TV Glow */
-.tv-glow {
+/* .tv-glow {
   position: absolute;
   width: calc(100% - 40px);
   height: var(--tv-height);
@@ -211,7 +211,7 @@ body {
   box-shadow: 0 0 100px 5px rgba(0, 150, 255, 0.15);
   pointer-events: none;
   z-index: -1;
-}
+} */
 
 .tv-controls {
   width: 100%;
@@ -624,17 +624,17 @@ body {
 }
 
 /* Add moving scanline effect */
-.scanline {
+/* .scanline {
   position: absolute;
   width: 100%;
   height: 2px;
   background: rgba(0, 255, 0, 0.1);
   animation: scanline 3s linear infinite;
   z-index: 3;
-}
+} */
 
 /* Add chromatic aberration effect */
-.youtube-container::after {
+/* .youtube-container::after {
   content: '';
   position: absolute;
   top: 0;
@@ -646,7 +646,7 @@ body {
   pointer-events: none;
   transform: translateX(1px);
   filter: blur(0.5px);
-}
+} */
 
 /* For mobile landscape orientation */
 @media (max-height: 500px) and (orientation: landscape) {
