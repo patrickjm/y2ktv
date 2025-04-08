@@ -280,7 +280,7 @@ function App() {
 
   // Handle volume change
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseInt(e.target.value);
+    const newVolume = parseInt((e.target as HTMLInputElement).value);
     setVolume(newVolume);
   };
 

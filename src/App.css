@@ -229,22 +229,26 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  padding: 10px 20px;
+  min-width: 300px;
+  max-width: 100%;
+  margin-top: -10px;
 }
 
 .tv-base {
   position: absolute;
-  bottom: -80px;
+  bottom: -85px;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 85px;
   display: flex;
   justify-content: center;
-  padding: 10px 0;
+  padding: 15px 0;
   background: var(--tv-color);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
-  padding-bottom: 20px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 #vol-label {
@@ -375,8 +379,8 @@ body {
 }
 
 .mute-button.muted {
-  background-color: #ff4444;
-  box-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+  background-color: #733b3b;
+  box-shadow: 0 0 10px rgb(93 57 57 / 50%);
 }
 
 .mute-button.muted:hover {
@@ -396,23 +400,146 @@ body {
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 480px) {
   :root {
     --tv-width: 95vw;
     --tv-height: 50vh;
   }
   
+  .tv-set {
+    width: 100%;
+    height: auto;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    margin-top: 0;
+    max-width: 100%;
+    max-height: none;
+  }
+  
+  .tv-screen {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    aspect-ratio: 16/9;
+    animation: none;
+  }
+  
+  .tv-glow {
+    display: none;
+  }
+  
+  .tv-base {
+    position: relative;
+    bottom: 0;
+    background: #121212;
+    border-radius: 0;
+    height: auto;
+    padding: 15px;
+  }
+  
   .tv-controls {
-    flex-direction: column;
-    gap: 10px;
+    flex-direction: row;
+    justify-content: center;
+    gap: 30px;
+    padding: 10px;
+    margin-top: 0;
+    flex-wrap: wrap;
+  }
+  
+  .tv-channel-buttons {
+    min-width: auto;
+  }
+  
+  .channel-button {
+    width: 36px;
+    height: 36px;
   }
   
   .channel-number {
-    font-size: 40px;
+    font-size: 1.2rem;
+    top: 5px;
+    left: 5px;
   }
   
-  .channel-name {
-    font-size: 16px;
+  .volume-slider {
+    width: 80px;
+  }
+  
+  .scanline {
+    display: none;
+  }
+
+  .tv-screen::after {
+    display: none;
+  }
+  
+  .youtube-container::after {
+    display: none;
+  }
+  
+  #youtube-player iframe {
+    filter: none;
+  }
+}
+
+/* For extremely small screens */
+@media (max-width: 360px) {
+  .tv-controls {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .tv-channel-buttons {
+    max-width: 10rem;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .tv-knobs {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* New media query for tablet-sized screens */
+@media (min-width: 481px) and (max-width: 768px) {
+  .tv-set {
+    width: 85vmin;
+  }
+  
+  .tv-base {
+    padding: 10px 10px;
+  }
+  
+  .tv-controls {
+    padding: 0 10px;
+    flex-wrap: nowrap;
+  }
+  
+  .tv-channel-buttons {
+    padding: 8px 10px;
+    min-width: 120px;
+  }
+  
+  .volume-slider {
+    width: 80px;
+  }
+  
+  .tv-knobs {
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  
+  .channel-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .channel-indicator {
+    padding: 5px 8px;
+    font-size: 12px;
   }
 }
 
@@ -480,4 +607,92 @@ body {
   text-shadow: 0 0 5px #00ff00;
   z-index: 2;
   opacity: 0.8;
+}
+
+/* For mobile landscape orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .app-container {
+    padding: 10px;
+    align-items: center;
+  }
+  
+  .tv-set {
+    width: 100%;
+    height: auto;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+    margin-top: 0;
+    max-width: 100%;
+    max-height: none;
+    flex-direction: row;
+  }
+  
+  .tv-screen {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    width: 70%;
+    height: 100vh;
+    padding-top: 0;
+    animation: none;
+    aspect-ratio: 16/9;
+    position: relative;
+  }
+  
+  .youtube-container {
+    position: absolute;
+    height: 100%;
+  }
+  
+  .tv-glow {
+    display: none;
+  }
+  
+  .tv-base {
+    position: relative;
+    bottom: 0;
+    width: 28%;
+    height: 70vh;
+    right: 0;
+    margin-left: 2%;
+    background: #121212;
+    border-radius: 0;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  
+  .tv-channel-buttons,
+  .tv-knobs {
+    width: 100%;
+  }
+  
+  .tv-controls {
+    flex-direction: column;
+    height: 100%;
+    gap: 30px;
+    padding: 0;
+    justify-content: center;
+    min-width: 0;
+  }
+  
+  .channel-number {
+    font-size: 1.2rem;
+    top: 5px;
+    left: 5px;
+  }
+  
+  .scanline, 
+  .tv-screen::after,
+  .youtube-container::after {
+    display: none;
+  }
+  
+  #youtube-player iframe {
+    filter: none;
+  }
 }
