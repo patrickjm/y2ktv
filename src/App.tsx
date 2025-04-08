@@ -45,6 +45,7 @@ function App() {
   const playerRef = useRef<any>(null);
   const playerReadyRef = useRef<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
+  const [showCopiedMessage, setShowCopiedMessage] = useState<boolean>(false);
   
   // Get unique genres from shows
   const genres = [...new Set(SHOWS.map(show => show.g))];
@@ -289,6 +290,21 @@ function App() {
     setIsMuted(!isMuted);
   };
 
+  // Copy YouTube URL to clipboard
+  const copyVideoUrl = () => {
+    if (videoId) {
+      const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      navigator.clipboard.writeText(youtubeUrl)
+        .then(() => {
+          setShowCopiedMessage(true);
+          setTimeout(() => setShowCopiedMessage(false), 2000);
+        })
+        .catch(err => {
+          console.error('Could not copy URL: ', err);
+        });
+    }
+  };
+
   // Function to adjust the player's vertical position to center content and hide controls/branding
   const adjustPlayerVerticalPosition = useCallback(() => {
     try {
@@ -372,7 +388,7 @@ function App() {
                   onChange={handleVolumeChange}
                   className="volume-slider"
                 />
-                <div className="knob-label" id="vol-label">VOL</div>
+                <div className="knob-label" style={{ top: '26px' }}>VOL</div>
               </div>
               <button 
                 className={`mute-button ${isMuted ? 'muted' : ''}`}
@@ -383,6 +399,17 @@ function App() {
                   {isMuted ? "🔇" : "🔊"}
                 </div>
                 <div className="knob-label">{isMuted ? "UNMUTE" : "MUTE"}</div>
+              </button>
+              <button 
+                className="copy-url-button"
+                onClick={copyVideoUrl}
+                aria-label="Copy URL"
+              >
+                <div className="copy-icon">
+                  📋
+                </div>
+                <div className="knob-label">COPY URL</div>
+                {showCopiedMessage && <div className="copied-message">Copied!</div>}
               </button>
             </div>
           </div>

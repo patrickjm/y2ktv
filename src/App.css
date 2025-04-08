@@ -251,10 +251,7 @@ body {
   box-sizing: border-box;
 }
 
-#vol-label {
-  bottom: 11px
-}
-
+/* Remove the separate #vol-label selector and use it inline with volume-control */
 .tv-channel-buttons {
   display: flex;
   justify-content: center;
@@ -304,7 +301,7 @@ body {
 
 .tv-knobs {
   display: flex;
-  gap: 15px;
+  gap: 22px;
   align-items: center;
 }
 
@@ -313,6 +310,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 5px;
+  position: relative;
+  margin-bottom: 10px;
 }
 
 .volume-slider {
@@ -368,6 +367,7 @@ body {
   border: none;
   padding: 0;
   position: relative;
+  margin-bottom: 10px;
 }
 
 .mute-button:hover {
@@ -398,6 +398,63 @@ body {
   font-size: 10px;
   color: white;
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  width: auto;
+  text-align: center;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.copy-url-button {
+  width: 40px;
+  height: 40px;
+  background-color: #4a5568;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  padding: 0;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.copy-url-button:hover {
+  background-color: #667eea;
+  transform: scale(1.05);
+}
+
+.copy-url-button:active {
+  transform: scale(0.95);
+}
+
+.copy-icon {
+  font-size: 20px;
+  margin-bottom: 2px;
+}
+
+.copied-message {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  animation: fadeOut 2s ease-in-out;
+  white-space: nowrap;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 @media (max-width: 480px) {
@@ -500,6 +557,12 @@ body {
   .tv-knobs {
     width: 100%;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px 22px;
+  }
+  
+  .knob-label {
+    bottom: -20px;
   }
 }
 
@@ -694,5 +757,16 @@ body {
   
   #youtube-player iframe {
     filter: none;
+  }
+  
+  .tv-knobs {
+    gap: 25px;
+    margin-top: 10px;
+  }
+  
+  .copied-message {
+    left: auto;
+    right: -70px;
+    transform: none;
   }
 }
