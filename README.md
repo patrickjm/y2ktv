@@ -42,4 +42,13 @@ bun run dev
 
 ## Credits
 
-This project was inspired by similar nostalgic TV simulators like ytch.xyz.
+Static source
+https://pixabay.com/videos/texture-reception-screen-static-58013/
+
+Then ran:
+
+```sh
+ffmpeg -i input.mp4 -c:v libvpx-vp9 -crf 40 -b:v 250K -vf scale=640:360 -c:a libopus -b:a 32k output.webm
+
+ffmpeg -i output.webm -t 5 -c copy trimmed.webm
+```

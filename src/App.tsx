@@ -38,7 +38,7 @@ interface Channel {
 function App() {
   const [currentChannel, setCurrentChannel] = useState<number>(0);
   const [videoId, setVideoId] = useState<string>('');
-  const [isChangingChannel, setIsChangingChannel] = useState<boolean>(false);
+  const [isChangingChannel, setIsChangingChannel] = useState<boolean>(true);
   const [videoError, setVideoError] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(true);
   const [volume, setVolume] = useState<number>(100);
@@ -88,16 +88,23 @@ function App() {
       }
       accumulatedTime += video.duration;
     }
+    
+    const nextVideoId = currentChannelData.playlist[currentVideoIndex].id;
 
-    setVideoId(currentChannelData.playlist[currentVideoIndex].id);
-    setCurrentTime(currentVideoStart); // You'll need to add this state
-    setVideoError(false);
-  }, [currentChannel, channels]);
+    if (nextVideoId !== videoId) {
+      setIsChangingChannel(true);
+      setVideoId(nextVideoId);
+      setCurrentTime(currentVideoStart);
+      setVideoError(false);
+    }
+    // No need to setVideoError(false) if the video hasn't changed
+    
+  }, [currentChannel, channels, videoId]);
 
   // Then update the useEffect to use the memoized version
   useEffect(() => {
     const intervalId = setInterval(determineVideoFromTime, 60000);
-    determineVideoFromTime();
+    determineVideoFromTime(); // Initial call
     return () => clearInterval(intervalId);
   }, [determineVideoFromTime]); // Now depends on the memoized callback
 
@@ -188,12 +195,11 @@ function App() {
             },
             onError: handleVideoError,
             onStateChange: (event: any) => {
-              if (event.data === window.YT.PlayerState.ENDED) {
-                // Let the time-based system handle progression instead of immediate next video
+              if (event.data === window.YT.PlayerState.PLAYING) {
+                setIsChangingChannel(false);
+                adjustPlayerVerticalPosition(); // Adjust position when playing
+              } else if (event.data === window.YT.PlayerState.ENDED) {
                 determineVideoFromTime();
-              } else if (event.data === window.YT.PlayerState.PLAYING) {
-                // When video starts playing, adjust position
-                adjustPlayerVerticalPosition();
               }
             }
           }
@@ -201,6 +207,7 @@ function App() {
       } catch (e) {
         console.error("Error initializing YouTube player:", e);
         setVideoError(true);
+        setIsChangingChannel(true); // Show static on error too
       }
     }
 
@@ -208,7 +215,7 @@ function App() {
     return () => {
       window.onYouTubeIframeAPIReady = () => {};
     };
-  }, [videoId, isChangingChannel]);
+  }, [videoId]);
 
   // Update player when volume changes
   useEffect(() => {
@@ -249,33 +256,29 @@ function App() {
     
     setIsChangingChannel(true);
     setVideoError(false);
-    
-    // Simulate TV channel changing effect
-    setTimeout(() => {
-      setCurrentChannel(nextChannel);
-      
-      // After changing the channel, hide the changing effect after 1 second
-      setTimeout(() => {
-        setIsChangingChannel(false);
-      }, 1000); // Reduced from 800 to 1000 for full second of static
-    }, 500);
+    setCurrentChannel(nextChannel); // Change channel immediately, useEffect will handle the video update
   };
 
   // Try the next video if the current one fails
   const handleVideoError = () => {
-    setVideoError(true);
     console.log('Video failed to load');
+    setIsChangingChannel(true); // Show static
+    setVideoError(true);
     
-    // Add fallback to static after 3 failed attempts
+    // Find the next video in the current channel's playlist
     const currentPlaylist = channels[currentChannel].playlist;
     const currentIndex = currentPlaylist.findIndex(item => item.id === videoId);
     const nextIndex = (currentIndex + 1) % currentPlaylist.length;
-    
-    if (currentPlaylist[nextIndex].id === videoId) {
-      // If all videos failed, switch channel
-      changeChannel('next');
+    const nextVideoId = currentPlaylist[nextIndex].id;
+
+    // If we've looped through all videos and they all failed, maybe switch channel?
+    // For now, just try the next video ID
+    if (nextVideoId !== videoId) {
+      setVideoId(nextVideoId);
+      setCurrentTime(0); // Start next video from the beginning
     } else {
-      setVideoId(currentPlaylist[nextIndex].id);
+      // If the next ID is the same (only 1 video or all failed), trigger channel change
+      changeChannel('next');
     }
   };
 
@@ -343,18 +346,28 @@ function App() {
   return (
     <div className="app-container">
       <div className="tv-set">
-        <div className={`tv-screen ${isChangingChannel ? 'changing-channel' : ''}`}>
+        <div className={`tv-screen ${isChangingChannel || videoError ? 'changing-channel' : ''}`}>
           <div className="channel-number">
             CH{currentChannel + 1}
           </div>
           
-          {!isChangingChannel && !videoError && (
-            <>
-              <div id="youtube-container" className="youtube-container"></div>
-              <div className="scanline" />
-            </>
+          {(isChangingChannel || videoError) && (
+            <video 
+              className="tv-static-video" 
+              src="/static.webm" 
+              autoPlay 
+              loop 
+              muted
+            />
           )}
-          {(isChangingChannel || videoError) && <div className="tv-static"></div>}
+          
+          {/* YouTube container should always be present to hold the player */} 
+          <div id="youtube-container" className="youtube-container" style={{ visibility: isChangingChannel || videoError ? 'hidden' : 'visible' }}></div>
+          
+          {!isChangingChannel && !videoError && (
+            <div className="scanline" />
+          )}
+          
         </div>
         <div className="tv-glow"></div>
         <div className="tv-base">
