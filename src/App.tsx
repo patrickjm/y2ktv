@@ -52,18 +52,42 @@ function App() {
   // Get unique genres from shows
   const genres = [...new Set(SHOWS.map(show => show.g))];
   
-  // Create channels based on genres
-  const channels: Channel[] = genres.map((genre, index) => ({
-    id: index,
-    name: genre,
-    playlist: SHOWS
-      .filter(show => show.g === genre)
-      .map(show => ({
+  // Helper function for deterministic shuffle using Fisher-Yates and LCG PRNG
+  function deterministicShuffle<T>(array: T[], seed: number): T[] {
+    const shuffled = [...array]; // Create a copy
+    // Simple LCG PRNG state
+    let state = seed;
+    const random = () => {
+      // LCG parameters (often used in simple PRNGs)
+      state = (1664525 * state + 1013904223) % Math.pow(2, 32);
+      return state / Math.pow(2, 32); // Return a value between 0 and 1
+    };
+
+    // Fisher-Yates shuffle algorithm
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(random() * (i + 1)); // Get random index 0 <= j <= i
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // Swap elements
+    }
+    return shuffled;
+  }
+
+  // Create channels based on genres, shuffling each playlist deterministically
+  const channels: Channel[] = genres.map((genre, index) => {
+    const genreSeed = SEED + index; // Combine global seed with index for unique genre seed
+    const filteredShows = SHOWS.filter(show => show.g === genre);
+    const shuffledShows = deterministicShuffle(filteredShows, genreSeed); // Shuffle the filtered shows
+
+    return {
+      id: index,
+      name: genre,
+      // Map the *shuffled* shows to the playlist items
+      playlist: shuffledShows.map(show => ({
         id: show.yt,
         duration: show.t
       })),
-    color: `hsl(${(index * 360) / genres.length}, 70%, 50%)` // Generate different colors for each channel
-  }));
+      color: `hsl(${(index * 360) / genres.length}, 70%, 50%)`
+    };
+  });
 
   // Add this before the useEffect that calls it
   const determineVideoFromTime = useCallback(() => {
