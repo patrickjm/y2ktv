@@ -192,6 +192,7 @@ body {
   text-shadow: 0 0 5px #00ff00;
   z-index: 10;
   opacity: 0.8;
+  font-weight: 800;
 }
 
 .channel-name {
