@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Embed Tester</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      background: #111;
+      color: #eee;
+    }
+    #player-container {
+      position: sticky;
+      top: 0;
+      background: #222;
+      padding: 1em;
+      z-index: 10;
+      border-bottom: 1px solid #333;
+    }
+    iframe {
+      width: 100%;
+      max-width: 560px;
+      height: 315px;
+      display: block;
+      margin: 0 auto;
+      border: none;
+    }
+    .progress-bar {
+      width: 100%;
+      background: #444;
+      height: 8px;
+      margin-top: 1em;
+    }
+    .progress {
+      height: 100%;
+      background: #0f0;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    #status {
+      text-align: center;
+      padding-top: 0.5em;
+    }
+    #log {
+      padding: 1em;
+      white-space: pre-wrap;
+      font-family: monospace;
+      max-height: calc(100vh - 400px);
+      overflow-y: auto;
+      border-top: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+
+<div id="player-container">
+  <div id="status">Preparing test...</div>
+  <div class="progress-bar"><div class="progress" id="progress"></div></div>
+  <div id="ytplayer"></div>
+</div>
+
+<div id="log"></div>
+
+<!-- Load YouTube IFrame API -->
+<script>
+  var tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.head.appendChild(tag);
+</script>
+
+<script>
+  const SHOWS = [
+  {
+    "yt": "NgqKH3Sl16I",
+    "t": 1361,
+    "o": null,
+    "d": "Happy Family 1  Pilot",
+    "g": "Sitcom"
+  },
+  {
+    "yt": "f0lypDuUg_Q",
+    "t": 1228,
+    "o": null,
+    "d": "Happy Family 2  Over and Out",
+    "g": "Sitcom"
+  },
+  {
+    "yt": "zz09Dd1dVKw",
+    "t": 1240,
+    "o": null,
+    "d": "Happy Family 3  Tooth",
+    "g": "Sitcom"
+  }];
+
+  const delayMs = 3000;
+  const failed = [];
+  let currentIndex = 0;
+  const total = SHOWS.length;
+  let player;
+
+  const statusEl = document.getElementById('status');
+  const progressEl = document.getElementById('progress');
+  const logEl = document.getElementById('log');
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function testNext() {
+    if (currentIndex >= total) {
+      statusEl.textContent = "✅ All videos tested.";
+      logEl.textContent += `\n\n❌ Failed videos:\n${JSON.stringify(failed, null, 2)}`;
+      return;
+    }
+
+    const { yt, d } = SHOWS[currentIndex];
+    statusEl.textContent = `Testing ${currentIndex + 1}/${total}: ${d}`;
+
+    let resolved = false;
+
+    player = new YT.Player('ytplayer', {
+      height: '315',
+      width: '560',
+      videoId: yt,
+      events: {
+        'onReady': (event) => {
+          event.target.mute();
+          event.target.playVideo();
+          setTimeout(() => event.target.pauseVideo(), 1000);
+        },
+        'onStateChange': async (event) => {
+          if (resolved) return;
+          if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.UNSTARTED) {
+            logEl.textContent += `✅ Loaded: ${d}\n`;
+            resolved = true;
+            cleanupAndContinue();
+          }
+        },
+        'onError': (event) => {
+          if (!resolved) {
+            failed.push(SHOWS[currentIndex]);
+            logEl.textContent += `❌ Failed: ${d} (Error Code ${event.data})\n`;
+            resolved = true;
+            cleanupAndContinue();
+          }
+        }
+      }
+    });
+
+    async function cleanupAndContinue() {
+      currentIndex++;
+      const percent = Math.round((currentIndex / total) * 100);
+      progressEl.style.width = percent + '%';
+
+      const remaining = total - currentIndex;
+      const eta = Math.round((remaining * delayMs) / 1000);
+      statusEl.textContent = `Waiting... ${remaining} left (~${eta}s)`;
+
+      await sleep(delayMs);
+      player.destroy();
+      testNext();
+    }
+  }
+
+  // ✅ GLOBAL: called by YouTube API
+  window.onYouTubeIframeAPIReady = function () {
+    testNext();
+  };
+</script>
+
+</body>
+</html>
